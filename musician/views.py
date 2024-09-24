@@ -1,32 +1,29 @@
-from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView, DeleteView
 from .forms import MusicianForm
-from . import models
-from . import forms
+from .models import Musician  
 
-# Create your views here.
-def add_musician(request):
-    if request.method == 'POST':
-        form = MusicianForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('add_musician')
-    else:
-        form = MusicianForm()
-    return render(request, 'add_musician.html', {'form': form})
+class AddMusicianView(CreateView):
+    model = Musician
+    form_class = MusicianForm
+    template_name = 'add_musician.html'
+    success_url = reverse_lazy('add_musician')
 
 
-def edit_musician(request, id):
-    post = models.Musician.objects.get(pk=id)
-    form = forms.MusicianForm(instance=post)
-    if request.method == 'POST':
-        form = forms.MusicianForm(request.POST, instance=post)
-        if form.is_valid():
-            form.save()
-            return redirect('homepage')
-    return render(request, 'add_musician.html', {'form': form})
+class EditMusicianView(UpdateView):
+    model = Musician
+    form_class = MusicianForm
+    template_name = 'add_musician.html'  # Reusing the same template for editing
+    success_url = reverse_lazy('homepage')
+
+    def get_object(self, queryset=None):
+        return Musician.objects.get(pk=self.kwargs['id'])
 
 
-def delete_musician(request, id):
-    post = models.Post.objects.get(pk=id)
-    post.delete()
-    return redirect('homepage')
+class DeleteMusicianView(DeleteView):
+    model = Musician
+    template_name = 'confirm_delete.html'  # You can use a confirmation page template
+    success_url = reverse_lazy('homepage')
+
+    def get_object(self, queryset=None):
+        return Musician.objects.get(pk=self.kwargs['id'])
